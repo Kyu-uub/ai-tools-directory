@@ -1,8 +1,11 @@
+'use client';
+
 import { Suspense } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ToolCard from '@/components/ToolCard';
 import { tools, categories, getToolsByCategory, searchTools } from '@/lib/tools';
+import { useSearchParams } from 'next/navigation';
 
 const featured = tools.filter((t) => t.featured).slice(0, 3);
 
@@ -32,8 +35,20 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Featured (only on homepage, no filters active) */}
-        <FiltersOnly />
+        {/* Featured tools (always show on homepage) */}
+        <section className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+          <h2 className="mb-4 text-xl font-semibold text-zinc-900 dark:text-zinc-50">Featured this week</h2>
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {featured.map((tool) => (
+              <ToolCard key={tool.id} tool={tool} />
+            ))}
+          </div>
+        </section>
+
+        {/* Filterable tool grid — uses Suspense to avoid SSR issues */}
+        <Suspense fallback={<div className="py-20 text-center text-zinc-500">Loading tools…</div>}>
+          <ToolGrid />
+        </Suspense>
 
         {/* SEO text block */}
         <section className="mx-auto max-w-3xl px-4 pb-16 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400 sm:px-6">
@@ -53,37 +68,35 @@ export default function Home() {
   );
 }
 
-function FiltersOnly() {
-  const { category, search, pricing } = useSearchParams();
+function ToolGrid() {
+  const searchParams = useSearchParams();
+  const category = searchParams.get('category') || 'All';
+  const search = searchParams.get('search') || '';
+  const pricing = searchParams.get('pricing') || '';
 
   let filtered = [...tools];
-  if (search) filtered = searchTools(search);
-  if (category && category !== 'All') filtered = getToolsByCategory(category);
-  if (pricing) filtered = filtered.filter(t => t.pricing === pricing);
-
-  const isFiltered = !!(search || (category && category !== 'All') || pricing);
-
-  // Show featured only when no filters
-  if (!isFiltered) {
-    return (
-      <section className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-        <h2 className="mb-4 text-xl font-semibold text-zinc-900 dark:text-zinc-50">Featured this week</h2>
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {featured.map((tool) => (
-            <ToolCard key={tool.id} tool={tool} />
-          ))}
-        </div>
-      </section>
-    );
+  if (search) {
+    filtered = searchTools(search);
   }
+  if (category && category !== 'All') {
+    filtered = getToolsByCategory(category);
+  }
+  if (pricing) {
+    filtered = filtered.filter((t) => t.pricing === pricing);
+  }
+
+  const isFiltered = !!(search || category !== 'All' || pricing);
 
   return (
     <section className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-      <p className="mb-6 text-zinc-600 dark:text-zinc-400">
-        Found <span className="font-semibold text-zinc-900 dark:text-zinc-50">{filtered.length}</span> results
-        {search && <> for &ldquo;<span className="italic">{search}</span>&rdquo;</>}
-        {category && <> in <span className="italic">{category}</span></>}
-      </p>
+      {(category !== 'All' || search) && (
+        <p className="mb-6 text-zinc-600 dark:text-zinc-400">
+          Found <span className="font-semibold text-zinc-900 dark:text-zinc-50">{filtered.length}</span>{' '}
+          results
+          {search && <> for &ldquo;<span className="italic">{search}</span>&rdquo;</>}
+          {category !== 'All' && <> in <span className="italic">{category}</span></>}
+        </p>
+      )}
 
       {filtered.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-zinc-300 p-16 text-center dark:border-zinc-700">
@@ -93,22 +106,25 @@ function FiltersOnly() {
       ) : (
         <>
           {/* Category filter chips */}
-          <div className="mb-8 flex flex-wrap gap-2">
-            <span className="text-sm font-medium text-zinc-500 dark:text-zinc-400 mr-2 self-center">Filter:</span>
-            {categories.map((cat) => (
-              <a
-                key={cat}
-                href={`/?${new URLSearchParams({ category: cat, ...(search ? { search } : {}) }).toString()}`}
-                className={`px-3 py-1.5 text-sm rounded-full transition-colors ${
-                  (category === cat || (!category && cat === 'All'))
-                    ? 'bg-violet-600 text-white'
-                    : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700'
-                }`}
-              >
-                {cat}
-              </a>
-            ))}
-          </div>
+          {!isFiltered && (
+            <div className="mb-8 flex flex-wrap gap-2">
+              <span className="text-sm font-medium text-zinc-500 dark:text-zinc-400 mr-2 self-center">Filter:</span>
+              {categories.map((cat) => (
+                <a
+                  key={cat}
+                  href={`/?${new URLSearchParams({ category: cat, ...(search ? { search } : {}) }).toString()}`}
+                  className={`px-3 py-1.5 text-sm rounded-full transition-colors ${
+                    category === cat
+                      ? 'bg-violet-600 text-white'
+                      : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700'
+                  }`}
+                >
+                  {cat}
+                </a>
+              ))}
+            </div>
+          )}
+
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {filtered.map((tool) => (
               <ToolCard key={tool.id} tool={tool} />
@@ -118,15 +134,4 @@ function FiltersOnly() {
       )}
     </section>
   );
-}
-
-// Client-side hook to read URL search params
-function useSearchParams() {
-  if (typeof window === 'undefined') return { category: '', search: '', pricing: '' };
-  const params = new URLSearchParams(window.location.search);
-  return {
-    category: params.get('category') || '',
-    search: params.get('search') || '',
-    pricing: params.get('pricing') || '',
-  };
 }

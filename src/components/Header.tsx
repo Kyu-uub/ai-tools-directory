@@ -7,18 +7,14 @@ import { categories } from '@/lib/tools';
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [activeCategory, setActiveCategory] = useState('All');
-  const [searchQuery, setSearchQuery] = useState('');
   const [searchInput, setSearchInput] = useState('');
+  const [activeCategory, setActiveCategory] = useState('All');
 
+  // Sync with URL params when component mounts
   useEffect(() => {
-    // Read current filters from URL
     const params = new URLSearchParams(window.location.search);
-    const cat = params.get('category') || 'All';
-    const q = params.get('search') || '';
-    setActiveCategory(cat);
-    setSearchQuery(q);
-    setSearchInput(q);
+    setSearchInput(params.get('search') || '');
+    setActiveCategory(params.get('category') || 'All');
 
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
@@ -36,8 +32,7 @@ export default function Header() {
   const handleCategory = (cat: string) => {
     const params = new URLSearchParams();
     if (cat !== 'All') params.set('category', cat);
-    const q = new URLSearchParams(window.location.search).get('search');
-    if (q) params.set('search', q);
+    if (searchInput.trim()) params.set('search', searchInput.trim());
     window.location.href = `/?${params.toString()}`;
   };
 
