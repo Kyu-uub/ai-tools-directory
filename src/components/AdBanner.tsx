@@ -54,7 +54,10 @@ export default function AdBanner() {
             </div>
           </div>
 
-          <button className="mt-3 w-full py-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium rounded-lg transition-colors">
+          <button
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            className="mt-3 w-full py-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium rounded-lg transition-colors"
+          >
             Learn More
           </button>
         </div>
