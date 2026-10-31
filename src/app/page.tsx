@@ -32,20 +32,8 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Featured */}
-        <section className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-          <h2 className="mb-4 text-xl font-semibold text-zinc-900 dark:text-zinc-50">Featured this week</h2>
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {featured.map((tool) => (
-              <ToolCard key={tool.id} tool={tool} />
-            ))}
-          </div>
-        </section>
-
-        {/* All tools — dynamic via searchParams */}
-        <Suspense fallback={<div className="py-20 text-center text-zinc-500">Loading tools…</div>}>
-          <DynamicTools />
-        </Suspense>
+        {/* Featured (only on homepage, no filters active) */}
+        <FiltersOnly />
 
         {/* SEO text block */}
         <section className="mx-auto max-w-3xl px-4 pb-16 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400 sm:px-6">
@@ -65,39 +53,37 @@ export default function Home() {
   );
 }
 
-// Separate client to access searchParams without blocking static prerender
-async function DynamicTools() {
-  const { category, search, pricing } = await new URLSearchParams(
-    typeof window !== 'undefined' ? (window.location.search as string) : ''
-  ).entries().reduce((acc: Record<string, string>, [k, v]) => { acc[k] = v; return acc; }, {}) as Record<string, string>;
+function FiltersOnly() {
+  const { category, search, pricing } = useSearchParams();
 
-  // Fallback: read from headers if in SSR context (this is a simple approach)
   let filtered = [...tools];
-  if (search) {
-    filtered = searchTools(search);
-  }
-  if (category && category !== 'All') {
-    filtered = getToolsByCategory(category);
-  }
-  if (pricing) {
-    filtered = filtered.filter((t) => t.pricing === pricing);
-  }
+  if (search) filtered = searchTools(search);
+  if (category && category !== 'All') filtered = getToolsByCategory(category);
+  if (pricing) filtered = filtered.filter(t => t.pricing === pricing);
 
-  const qs = new URLSearchParams();
-  if (category && category !== 'All') qs.set('category', category);
-  if (search) qs.set('search', search);
-  if (pricing) qs.set('pricing', pricing);
+  const isFiltered = !!(search || (category && category !== 'All') || pricing);
+
+  // Show featured only when no filters
+  if (!isFiltered) {
+    return (
+      <section className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+        <h2 className="mb-4 text-xl font-semibold text-zinc-900 dark:text-zinc-50">Featured this week</h2>
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {featured.map((tool) => (
+            <ToolCard key={tool.id} tool={tool} />
+          ))}
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-      {(category || search) && (
-        <p className="mb-6 text-zinc-600 dark:text-zinc-400">
-          Found <span className="font-semibold text-zinc-900 dark:text-zinc-50">{filtered.length}</span>{' '}
-          results
-          {search && <> for &ldquo;<span className="italic">{search}</span>&rdquo;</>}
-          {category && <> in <span className="italic">{category}</span></>}
-        </p>
-      )}
+      <p className="mb-6 text-zinc-600 dark:text-zinc-400">
+        Found <span className="font-semibold text-zinc-900 dark:text-zinc-50">{filtered.length}</span> results
+        {search && <> for &ldquo;<span className="italic">{search}</span>&rdquo;</>}
+        {category && <> in <span className="italic">{category}</span></>}
+      </p>
 
       {filtered.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-zinc-300 p-16 text-center dark:border-zinc-700">
@@ -106,24 +92,23 @@ async function DynamicTools() {
         </div>
       ) : (
         <>
-          {!search && !category && (
-            <div className="mb-8 flex flex-wrap gap-2">
-              <span className="text-sm font-medium text-zinc-500 dark:text-zinc-400 mr-2 self-center">Filter:</span>
-              {categories.slice(1).map((cat) => (
-                <a
-                  key={cat}
-                  href={`/?${qs.toString() ? qs + '&' : ''}category=${encodeURIComponent(cat)}`}
-                  className={`px-3 py-1.5 text-sm rounded-full transition-colors ${
-                    category === cat
-                      ? 'bg-violet-600 text-white'
-                      : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700'
-                  }`}
-                >
-                  {cat}
-                </a>
-              ))}
-            </div>
-          )}
+          {/* Category filter chips */}
+          <div className="mb-8 flex flex-wrap gap-2">
+            <span className="text-sm font-medium text-zinc-500 dark:text-zinc-400 mr-2 self-center">Filter:</span>
+            {categories.map((cat) => (
+              <a
+                key={cat}
+                href={`/?${new URLSearchParams({ category: cat, ...(search ? { search } : {}) }).toString()}`}
+                className={`px-3 py-1.5 text-sm rounded-full transition-colors ${
+                  (category === cat || (!category && cat === 'All'))
+                    ? 'bg-violet-600 text-white'
+                    : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700'
+                }`}
+              >
+                {cat}
+              </a>
+            ))}
+          </div>
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {filtered.map((tool) => (
               <ToolCard key={tool.id} tool={tool} />
@@ -133,4 +118,15 @@ async function DynamicTools() {
       )}
     </section>
   );
+}
+
+// Client-side hook to read URL search params
+function useSearchParams() {
+  if (typeof window === 'undefined') return { category: '', search: '', pricing: '' };
+  const params = new URLSearchParams(window.location.search);
+  return {
+    category: params.get('category') || '',
+    search: params.get('search') || '',
+    pricing: params.get('pricing') || '',
+  };
 }

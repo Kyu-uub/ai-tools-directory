@@ -9,8 +9,17 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchInput, setSearchInput] = useState('');
 
   useEffect(() => {
+    // Read current filters from URL
+    const params = new URLSearchParams(window.location.search);
+    const cat = params.get('category') || 'All';
+    const q = params.get('search') || '';
+    setActiveCategory(cat);
+    setSearchQuery(q);
+    setSearchInput(q);
+
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
@@ -18,9 +27,18 @@ export default function Header() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (searchQuery.trim()) {
-      window.location.href = `/?search=${encodeURIComponent(searchQuery.trim())}`;
-    }
+    const params = new URLSearchParams();
+    if (searchInput.trim()) params.set('search', searchInput.trim());
+    if (activeCategory !== 'All') params.set('category', activeCategory);
+    window.location.href = `/?${params.toString()}`;
+  };
+
+  const handleCategory = (cat: string) => {
+    const params = new URLSearchParams();
+    if (cat !== 'All') params.set('category', cat);
+    const q = new URLSearchParams(window.location.search).get('search');
+    if (q) params.set('search', q);
+    window.location.href = `/?${params.toString()}`;
   };
 
   return (
@@ -58,8 +76,8 @@ export default function Header() {
                 <input
                   id="search"
                   type="search"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
                   placeholder="Search tools..."
                   className="h-9 w-full pl-9 pr-4 rounded-lg bg-zinc-100 dark:bg-zinc-800 border-0 text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-violet-500"
                 />
@@ -72,7 +90,7 @@ export default function Header() {
                   key={cat}
                   role="tab"
                   aria-selected={activeCategory === cat}
-                  onClick={() => setActiveCategory(cat)}
+                  onClick={() => handleCategory(cat)}
                   className={`px-2 py-1 text-xs font-medium rounded-md transition-all ${
                     activeCategory === cat
                       ? 'bg-white dark:bg-zinc-700 text-violet-600 dark:text-violet-400 shadow-sm'
@@ -115,8 +133,8 @@ export default function Header() {
                 </svg>
                 <input
                   type="search"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
                   placeholder="Search tools..."
                   className="w-full h-10 pl-9 pr-4 rounded-lg bg-zinc-100 dark:bg-zinc-800 border-0 text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-violet-500"
                 />
@@ -128,7 +146,7 @@ export default function Header() {
                   key={cat}
                   role="tab"
                   aria-selected={activeCategory === cat}
-                  onClick={() => { setActiveCategory(cat); setMobileMenuOpen(false); }}
+                  onClick={() => { handleCategory(cat); setMobileMenuOpen(false); }}
                   className={`px-3 py-1.5 text-xs font-medium rounded-full transition-all ${
                     activeCategory === cat
                       ? 'bg-violet-600 text-white'
