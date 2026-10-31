@@ -30,69 +30,50 @@ export default function Header() {
       }`}
     >
       <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8" aria-label="Main navigation">
-        <div className="flex h-16 items-center justify-between">
+        <div className="flex h-14 items-center gap-4">
           {/* Logo */}
-          <Link
-            href="/"
-            className="flex items-center gap-2 text-xl font-bold text-zinc-900 dark:text-zinc-100 hover:opacity-80 transition-opacity"
-            aria-label="AI Tools Directory Home"
-          >
-            <svg
-              className="h-8 w-8 text-violet-600 dark:text-violet-400"
-              viewBox="0 0 32 32"
-              fill="none"
-              aria-hidden="true"
-            >
-              <rect width="32" height="32" rx="8" className="fill-violet-600 dark:fill-violet-400" />
-              <path
-                d="M8 12h16M8 16h12M8 20h8"
-                stroke="white"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-              />
-            </svg>
-            <span className="hidden sm:block">AI Tools Hub</span>
+          <Link href="/" className="flex items-center gap-2 shrink-0" aria-label="AI Tools Hub Home">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-600 text-white font-bold text-sm">
+              AI
+            </div>
+            <span className="hidden sm:inline text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+              AI Tools Hub
+            </span>
           </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex md:items-center md:gap-6">
-            <div className="relative" role="search">
-              <form onSubmit={handleSearch} className="flex items-center">
-                <label htmlFor="search" className="sr-only">Search tools</label>
+          {/* Desktop: Search + Categories */}
+          <div className="hidden md:flex md:items-center md:gap-4 md:flex-1">
+            <form onSubmit={handleSearch} className="flex-1 max-w-sm">
+              <label htmlFor="search" className="sr-only">Search tools</label>
+              <div className="relative">
                 <svg
-                  className="absolute left-3 h-5 w-5 text-zinc-400 pointer-events-none"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
                   aria-hidden="true"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
                 <input
                   id="search"
                   type="search"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search 100+ AI tools..."
-                  className="h-10 w-64 pl-10 pr-4 rounded-lg bg-zinc-100 dark:bg-zinc-800 border-0 text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-violet-500"
-                  aria-label="Search tools"
+                  placeholder="Search tools..."
+                  className="h-9 w-full pl-9 pr-4 rounded-lg bg-zinc-100 dark:bg-zinc-800 border-0 text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-violet-500"
                 />
-              </form>
-            </div>
+              </div>
+            </form>
 
             <div className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-800 rounded-lg p-1" role="tablist" aria-label="Categories">
-              {categories.map((cat) => (
+              {categories.slice(0, 5).map((cat) => (
                 <button
                   key={cat}
                   role="tab"
                   aria-selected={activeCategory === cat}
                   onClick={() => setActiveCategory(cat)}
-                  className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-200 ${
+                  className={`px-2 py-1 text-xs font-medium rounded-md transition-all ${
                     activeCategory === cat
                       ? 'bg-white dark:bg-zinc-700 text-violet-600 dark:text-violet-400 shadow-sm'
                       : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
@@ -105,43 +86,39 @@ export default function Header() {
           </div>
 
           {/* Mobile Menu Button */}
-          <div className="flex md:hidden items-center gap-3">
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-lg text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-              aria-expanded={mobileMenuOpen}
-              aria-controls="mobile-menu"
-              aria-label="Toggle menu"
-            >
-              {mobileMenuOpen ? (
-                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              ) : (
-                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              )}
-            </button>
-          </div>
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="ml-auto p-2 rounded-lg text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors md:hidden"
+            aria-expanded={mobileMenuOpen}
+            aria-controls="mobile-menu"
+            aria-label="Toggle menu"
+          >
+            {mobileMenuOpen ? (
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            ) : (
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            )}
+          </button>
         </div>
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div id="mobile-menu" className="md:hidden py-4 border-t border-zinc-200 dark:border-zinc-800 animate-slide-down">
+          <div id="mobile-menu" className="md:hidden py-4 border-t border-zinc-200 dark:border-zinc-800">
             <form onSubmit={handleSearch} className="mb-4" role="search">
-              <label htmlFor="mobile-search" className="sr-only">Search tools</label>
               <div className="relative">
-                <svg className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <svg className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
                 <input
-                  id="mobile-search"
                   type="search"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search tools..."
-                  className="w-full h-10 pl-10 pr-4 rounded-lg bg-zinc-100 dark:bg-zinc-800 border-0 text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                  className="w-full h-10 pl-9 pr-4 rounded-lg bg-zinc-100 dark:bg-zinc-800 border-0 text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-violet-500"
                 />
               </div>
             </form>
@@ -152,7 +129,7 @@ export default function Header() {
                   role="tab"
                   aria-selected={activeCategory === cat}
                   onClick={() => { setActiveCategory(cat); setMobileMenuOpen(false); }}
-                  className={`px-3 py-1.5 text-sm font-medium rounded-full transition-all ${
+                  className={`px-3 py-1.5 text-xs font-medium rounded-full transition-all ${
                     activeCategory === cat
                       ? 'bg-violet-600 text-white'
                       : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400'
@@ -164,14 +141,6 @@ export default function Header() {
             </div>
           </div>
         )}
-
-        <style jsx>{`
-          @keyframes slide-down {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-          }
-          .animate-slide-down { animation: slide-down 0.2s ease-out; }
-        `}</style>
       </nav>
     </header>
   );
