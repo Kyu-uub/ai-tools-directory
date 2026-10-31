@@ -3,6 +3,7 @@
 import { Suspense } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import AdBanner from '@/components/AdBanner';
 import ToolCard from '@/components/ToolCard';
 import { tools, categories, getToolsByCategory, searchTools } from '@/lib/tools';
 import { useSearchParams } from 'next/navigation';
@@ -63,6 +64,7 @@ export default function Home() {
           </p>
         </section>
       </main>
+      <AdBanner />
       <Footer />
     </>
   );
