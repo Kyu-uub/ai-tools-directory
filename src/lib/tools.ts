@@ -216,6 +216,16 @@ export const tools: Tool[] = [
     featured: true,
   },
   {
+    id: 'agent-qa',
+    name: 'agent-qa',
+    tagline: 'Web and mobile QA with persistent memory',
+    description: 'Natural-language testing for web, Android, and iOS apps by vostride. Combines persistent memidex memory, validated self-improvement, and reviewable test evidence through CLI and MCP. The local runtime has no subscription fee; model-provider charges are separate. Licensed FSL-1.1-ALv2.',
+    category: 'Code & Dev',
+    pricing: 'Free',
+    website: 'https://www.vostride.com/',
+    tags: ['testing', 'web', 'android', 'ios', 'mcp', 'memory'],
+  },
+  {
     id: 'notion-ai',
     name: 'Notion AI',
     tagline: 'AI inside your workspace',
